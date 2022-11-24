@@ -1,0 +1,50 @@
+# This file contains metadata for your plugin.
+
+# This file should be included when you package your plugin.# Mandatory items:
+
+[general]
+name=PCA Report Description Generator
+qgisMinimumVersion=3.0
+description=The plugin provides a dockable environment to help generate quick features description from DRS data that can be used on the report.
+version=1.0
+author=Valerio Pinna
+email=vpinna@pre-contruct.com
+
+about=PCA Report Description is an internal QGIS Plugin specifically built for the PCA post-excavation phase and can be considered as a component of the new DRS/GIS integrated data management system.
+ <p>The plugin provides a dockable environment to help generate quick features description from DRS data that can be used on the report. The feature(s) that wants to be described can be recalled by choosing the value (context number or group name) from a dropdown list, or simply by selecting them in the map.
+
+
+tracker=http://bugs
+repository=http://repo
+# End of mandatory metadata
+
+# Recommended items:
+
+hasProcessingProvider=no
+# Uncomment the following line and add your changelog:
+changelog=1.0 
+ - First plugine release after beta testing (on 24/11/22)
+
+# Tags are comma separated with spaces allowed
+tags=python, PCA, report, groups, description, DRS
+
+homepage=http://homepage
+category=Plugins
+icon=icons/PCA_report_generator_icon.png
+# experimental flag
+experimental=False
+
+# deprecated flag (applies to the whole plugin, not just a single version)
+deprecated=False
+
+# Since QGIS 3.8, a comma separated list of plugins to be installed
+# (or upgraded) can be specified.
+# Check the documentation for more information.
+# plugin_dependencies=
+
+Category of the plugin: Raster, Vector, Database or Web
+# category=
+
+# If the plugin can run on QGIS Server.
+server=False
+

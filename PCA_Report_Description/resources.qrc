@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/pca_report_description" >
+        <file>icons/PCA_report_generator_icon.png</file>
+    </qresource>
+</RCC>
