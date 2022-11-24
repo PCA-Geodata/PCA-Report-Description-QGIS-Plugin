@@ -1,5 +1,5 @@
 
-<img src="images/PCA_report_generator_icon.png" />
+<img src="images/PCA_report_generator_icon.png" width="125" height="125"/>
 
 <h1>PCA Report Description Generator</h1>
 
