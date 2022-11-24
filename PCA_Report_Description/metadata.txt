@@ -14,8 +14,8 @@ about=PCA Report Description is an internal QGIS Plugin specifically built for t
  <p>The plugin provides a dockable environment to help generate quick features description from DRS data that can be used on the report. The feature(s) that wants to be described can be recalled by choosing the value (context number or group name) from a dropdown list, or simply by selecting them in the map.
 
 
-tracker=http://bugs
-repository=http://repo
+tracker=https://github.com/PCA-Geodata/PCA-Report-Description-QGIS-Plugin/issues
+repository=https://github.com/PCA-Geodata/PCA-Report-Description-QGIS-Plugin
 # End of mandatory metadata
 
 # Recommended items:
@@ -26,9 +26,9 @@ changelog=1.0
  - First plugine release after beta testing (on 24/11/22)
 
 # Tags are comma separated with spaces allowed
-tags=python, PCA, report, groups, description, DRS
+tags=python, PCA, report, groups, attribute table, string, description, DRS
 
-homepage=http://homepage
+homepage=https://github.com/PCA-Geodata/PCA-Report-Description-QGIS-Plugin
 category=Plugins
 icon=icons/PCA_report_generator_icon.png
 # experimental flag
