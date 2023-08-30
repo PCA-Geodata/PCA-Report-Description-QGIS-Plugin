@@ -6,7 +6,7 @@
 name=PCA Report Description Generator
 qgisMinimumVersion=3.0
 description=The plugin provides a dockable environment to help generate quick features description from DRS data that can be used on the report.
-version=1.0
+version=1.02
 author=Valerio Pinna
 email=vpinna@pre-contruct.com
 
@@ -22,8 +22,12 @@ repository=https://github.com/PCA-Geodata/PCA-Report-Description-QGIS-Plugin
 
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
-changelog=1.0 
- - First plugine release after beta testing (on 24/11/22)
+changelog=1.02
+ - Fixed minor bug on missing field 'Group' for site without phasing/grouping data.
+ <p>1.01
+ - Added exception for new DRS_Context_Database name which replaces the previous DRS_Table
+ <p>1.0 
+ - First plugin release after beta testing (on 24/11/22)
 
 # Tags are comma separated with spaces allowed
 tags=python, PCA, report, groups, attribute table, string, description, DRS

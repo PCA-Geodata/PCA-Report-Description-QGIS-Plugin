@@ -172,6 +172,13 @@ class PCAReportDescriptionGenerator:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
+        icon_path = ':/plugins/pca_report_description/icons/PCA logo round.png'
+        self.add_action(
+            icon_path,
+            text=self.tr(u'PCA logo'),
+            callback=self.dontdonothing,
+            parent=self.iface.mainWindow())
+
         icon_path = ':/plugins/pca_report_description/icons/PCA_report_generator_icon.png'
         self.add_action(
             icon_path,
@@ -235,12 +242,17 @@ class PCAReportDescriptionGenerator:
             # TODO: fix to allow choice of dock location
             self.iface.addDockWidget(Qt.TopDockWidgetArea, self.dockwidget)
             
-           
-            self.DRS_group_numbers_list()
-            self.DRS_cut_numbers_list()
+            #QgsProject.instance().layersRemoved.connect(self.DRS_cut_numbers_list)
+            #QgsProject.instance().layersAdded.connect(self.DRS_cut_numbers_list)
+            #QgsProject.instance().layersRemoved.connect(self.DRS_group_numbers_list)
+            #QgsProject.instance().layersAdded.connect(self.DRS_group_numbers_list)
+            
+            iface.layerTreeView().currentLayerChanged.connect(self.DRS_cut_numbers_list)
+            iface.layerTreeView().currentLayerChanged.connect(self.DRS_group_numbers_list)
             
             self.dockwidget.show()
-            
+            self.DRS_group_numbers_list()
+            self.DRS_cut_numbers_list()
             
             try: 
                 feature_layer = QgsProject.instance().mapLayersByName('Features_for_PostEx')[0]
@@ -255,6 +267,10 @@ class PCAReportDescriptionGenerator:
                 return self.dontdonothing()
             else:
                 intervention_layer.selectionChanged.connect(self.retrieve_cut_from_selection)
+            
+            
+            
+
 
             #tab1 - DRS
             self.dockwidget.copy_to_clipboard_tab1_pushButton.clicked.connect(self.copy_tab1_to_clipboard)
@@ -270,6 +286,11 @@ class PCAReportDescriptionGenerator:
             # self.dockwidget.descr_to_all_tab2_pushButton.clicked.connect(self.cut_string_from_all_interventions)
             # self.dockwidget.descr_to_selected_tab2_pushButton.clicked.connect(self.cut_string_from_selected_interventions)
 
+
+        
+    def test_change(self):
+        print ('pippo change')   
+
     def natural_sort(self, l): 
         convert = lambda text: int(text) if text.isdigit() else text.lower()
         alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
@@ -277,21 +298,31 @@ class PCAReportDescriptionGenerator:
         
     
     def DRS_cut_numbers_list(self):
-        try:
-             int_layer = QgsProject.instance().mapLayersByName("DRS_Table")[0]
-        except:     
-            QMessageBox.about(
-            None,
-            'PCA PostExcavation Plugin',
-            '''This is not a valid PCA QGIS Site Plan Project''')
+        layers = QgsProject.instance().mapLayersByName('DRS_Context_Database')
+
+        if layers:
+            # Layer found, assign the first layer
+            layer = layers[0]
+        else:
+            # Layer doesn't exist, assign another layer or handle the error
+            layers = QgsProject.instance().mapLayersByName('DRS_Table')
+            
+            if layers:
+                layer = layers[0]
+            else:
+                # Neither layer exists, handle the error
+                layer = None
+
+        if not layer:
             return self.dontdonothing()
-        else:        
+        if layer:
+            DRS_layer = layer
             list_of_values = []
             list_of_values.clear()
            
-            if int_layer is not None:
-                for feat in int_layer.getFeatures():
-                    if int_layer.getFeatures() != 0:
+            if DRS_layer is not None:
+                for feat in DRS_layer.getFeatures():
+                    if DRS_layer.getFeatures() != 0:
                         value = feat['Cut']
                         if value != NULL:
                             
@@ -310,26 +341,40 @@ class PCAReportDescriptionGenerator:
                         self.dockwidget.DRS_cut_no_tab1_comboBox.setMaxVisibleItems(25)
     
     def DRS_group_numbers_list(self):
-        try:
-             int_layer = QgsProject.instance().mapLayersByName("DRS_Table")[0]
-        except:     
-            QMessageBox.about(
-            None,
-            'PCA PostExcavation Plugin',
-            '''This is not a valid PCA QGIS Site Plan Project''')
+        # Attempt to get the layer from the project
+        layers = QgsProject.instance().mapLayersByName('DRS_Context_Database')
+
+        if layers:
+            # Layer found, assign the first layer
+            layer = layers[0]
+        else:
+            # Layer doesn't exist, assign another layer or handle the error
+            layers = QgsProject.instance().mapLayersByName('DRS_Table')
+            
+            if layers:
+                layer = layers[0]
+            else:
+                # Neither layer exists, handle the error
+                layer = None
+
+        if not layer:
             return self.dontdonothing()
-        else:        
+        if layer:
+            DRS_layer = layer
+                
             list_of_values = []
             list_of_values.clear()
            
-            if int_layer is not None:
-                for feat in int_layer.getFeatures():
-                    if int_layer.getFeatures() != 0:
-                        value = feat['Group']
-                        if value != NULL:
-                            
-                            if value not in list_of_values:
-                                list_of_values.append(str(value))  
+            if DRS_layer is not None:
+                for feat in DRS_layer.getFeatures():
+                    if DRS_layer.getFeatures() != 0:
+                        fields = DRS_layer.fields()
+                        if fields.indexFromName('Group') != -1:
+                            value = feat['Group']
+                            if value != NULL:
+                                
+                                if value not in list_of_values:
+                                    list_of_values.append(str(value))  
             
                 if len(list_of_values) == 0:
                     self.dockwidget.DRS_group_tab1_comboBox.setEnabled(False)
@@ -341,29 +386,46 @@ class PCAReportDescriptionGenerator:
                         self.dockwidget.DRS_group_tab1_comboBox.addItems(sorted_list_of_values)
                         self.dockwidget.DRS_group_tab1_comboBox.setCurrentText('') 
                         self.dockwidget.DRS_group_tab1_comboBox.setMaxVisibleItems(25)
+        
+        
     
     def string_from_DRS_cut_list(self):
-        try:
-             DRS_table_layer = QgsProject.instance().mapLayersByName("DRS_Table")[0]
-        except:     
+        # Attempt to get the layer from the project
+        layers = QgsProject.instance().mapLayersByName('DRS_Context_Database')
+
+        if layers:
+            # Layer found, assign the first layer
+            layer = layers[0]
+        else:
+            # Layer doesn't exist, assign another layer or handle the error
+            layers = QgsProject.instance().mapLayersByName('DRS_Table')
+            
+            if layers:
+                layer = layers[0]
+            else:
+                # Neither layer exists, handle the error
+                layer = None
+
+        if not layer:
             QMessageBox.about(
             None,
             'PCA PostExcavation Plugin',
-            '''This is not a valid PCA QGIS Site Plan Project''')
+            '''No DRS Context Database detected. This is not a valid PCA QGIS Site Plan Project''')
             return self.dontdonothing()
-        else:
-            
+        if layer:
+            DRS_Context_Database_layer = layer
+
             value = self.dockwidget.DRS_cut_no_tab1_comboBox.currentText()
             all_feature_description = []
 
             ###layer
             e = '''"Cut" = '''+"'"+value+"'" +"""and "Type" ilike 'Layer'"""
-            DRS_table_layer.selectByExpression(e)
-            count = DRS_table_layer.selectedFeatureCount()
+            DRS_Context_Database_layer.selectByExpression(e)
+            count = DRS_Context_Database_layer.selectedFeatureCount()
             
             if count != 0: 
                 layer_descr = []
-                for f in DRS_table_layer.selectedFeatures():
+                for f in DRS_Context_Database_layer.selectedFeatures():
                     
                     if f['Compaction'] != NULL:
                         layer_compaction = f['Compaction']
@@ -421,11 +483,11 @@ class PCAReportDescriptionGenerator:
 
             ###cut 
             e = '''"Cut" = '''+"'"+value+"'" +"""and "Type" ilike 'Cut'"""
-            DRS_table_layer.selectByExpression(e)
-            count = DRS_table_layer.selectedFeatureCount()
+            DRS_Context_Database_layer.selectByExpression(e)
+            count = DRS_Context_Database_layer.selectedFeatureCount()
 
             if count != 0: 
-                for f in DRS_table_layer.selectedFeatures():
+                for f in DRS_Context_Database_layer.selectedFeatures():
                     if f['type'] == 'Cut':
                         cut_descr = []
                         
@@ -508,13 +570,13 @@ class PCAReportDescriptionGenerator:
             
             e = '''"Cut" = '''+"'"+value+"'" +"""and "Type" ilike 'Fill'"""
             
-            DRS_table_layer.selectByExpression(e)
+            DRS_Context_Database_layer.selectByExpression(e)
             
-            count = DRS_table_layer.selectedFeatureCount()
+            count = DRS_Context_Database_layer.selectedFeatureCount()
             
             if count == 1: 
                   
-                for f in DRS_table_layer.selectedFeatures():
+                for f in DRS_Context_Database_layer.selectedFeatures():
                     if f['type'] == 'Fill':
                                                 
                         fill_descr = []
@@ -558,7 +620,7 @@ class PCAReportDescriptionGenerator:
                 fills_number.append(' It contained {} fills.'.format(count))   
                 all_feature_description.extend(fills_number)
                 
-                for f in DRS_table_layer.selectedFeatures():
+                for f in DRS_Context_Database_layer.selectedFeatures():
              
                     fills_descr = []
                     if f['Compaction'] != NULL:
@@ -601,15 +663,30 @@ class PCAReportDescriptionGenerator:
             self.dockwidget.DRS_tab1_result_plainTextEdit.setPlainText(('').join(map(str,all_feature_description)))
         
     def string_from_DRS_group_list(self):
-        try:
-            DRS_table_layer = QgsProject.instance().mapLayersByName("DRS_Table")[0]
-        except:     
+        # Attempt to get the layer from the project
+        layers = QgsProject.instance().mapLayersByName('DRS_Context_Database')
+
+        if layers:
+            # Layer found, assign the first layer
+            layer = layers[0]
+        else:
+            # Layer doesn't exist, assign another layer or handle the error
+            layers = QgsProject.instance().mapLayersByName('DRS_Table')
+            
+            if layers:
+                layer = layers[0]
+            else:
+                # Neither layer exists, handle the error
+                layer = None
+
+        if not layer:
             QMessageBox.about(
             None,
             'PCA PostExcavation Plugin',
-            '''This is not a valid PCA QGIS Site Plan Project''')
+            '''No DRS Context Database detected. This is not a valid PCA QGIS Site Plan Project''')
             return self.dontdonothing()
-        else:
+        if layer:
+            DRS_Context_Database_layer = layer
             
             group_value = self.dockwidget.DRS_group_tab1_comboBox.currentText()
             if group_value == '':   
@@ -619,13 +696,13 @@ class PCAReportDescriptionGenerator:
                            
                 e = '''"Group" = '''+"'"+group_value+"'" +"""and "Type" ilike 'Cut'"""
                 
-                DRS_table_layer.selectByExpression(e)
+                DRS_Context_Database_layer.selectByExpression(e)
                 
-                count = DRS_table_layer.selectedFeatureCount()
+                count = DRS_Context_Database_layer.selectedFeatureCount()
                 
 
                 if count == 1:
-                    for f in DRS_table_layer.selectedFeatures():
+                    for f in DRS_Context_Database_layer.selectedFeatures():
                         cut_number = f['Cut']
                     
                     self.dockwidget.DRS_cut_no_tab1_comboBox.setCurrentText(cut_number)
@@ -643,7 +720,7 @@ class PCAReportDescriptionGenerator:
                     cut_width_list = []
                     cut_depth_list = []
                     
-                    for f in DRS_table_layer.selectedFeatures():
+                    for f in DRS_Context_Database_layer.selectedFeatures():
                         cut_number = f['Cut']
                         if cut_number not in group_cuts_list:
                             group_cuts_list.append('[{}]'.format(str(cut_number)))
@@ -701,7 +778,7 @@ class PCAReportDescriptionGenerator:
                     
                     
 
-                    for cut in DRS_table_layer.selectedFeatures():
+                    for cut in DRS_Context_Database_layer.selectedFeatures():
                         all_cut_description = []
                         
                         cut_no = cut['Cut']
@@ -715,8 +792,8 @@ class PCAReportDescriptionGenerator:
                         #select fills for the cut
                         e = '''"Cut" = '''+"'"+cut_no+"'" +"""and "Type" ilike 'Fill'"""
                 
-                        DRS_table_layer.selectByExpression(e)
-                        cut_fill_count = DRS_table_layer.selectedFeatureCount()
+                        DRS_Context_Database_layer.selectByExpression(e)
+                        cut_fill_count = DRS_Context_Database_layer.selectedFeatureCount()
 
                         
                         
@@ -727,7 +804,7 @@ class PCAReportDescriptionGenerator:
                             fills_number.append(' It contained {} fills.\n'.format(cut_fill_count))   
                         all_cut_description.extend(fills_number)
                         
-                        for f in DRS_table_layer.selectedFeatures():
+                        for f in DRS_Context_Database_layer.selectedFeatures():
                             print (f['Context'])
                             fills_descr = []
                             if f['Compaction'] != NULL:
@@ -793,7 +870,7 @@ class PCAReportDescriptionGenerator:
                     
                     # Text Cut
                     all_group_description.append('{} had a {} shape with {} sloping sides, a {} base, and was aligned {}.'.format(group_value, list_of_cut_shapes, list_of_cut_sides, list_of_cut_bases, list_of_cut_orientations.replace('E', 'east').replace('W','west').replace('N','north').replace('S','south')))
-                    all_group_description.append(' It measured c. ?????m long, between {}m and {}m and between {}m and {}m deep.'.format(min(cut_width_list), max(cut_width_list),min(cut_depth_list),max(cut_depth_list)))
+                    all_group_description.append(' It measured c. ?????m long, between {}m and {}m wide and between {}m and {}m deep.'.format(min(cut_width_list), max(cut_width_list),min(cut_depth_list),max(cut_depth_list)))
 
                     all_group_description.append('\n\nFills:')
                     all_group_description.append('\n')
@@ -863,6 +940,7 @@ class PCAReportDescriptionGenerator:
                 self.dockwidget.DRS_cut_no_tab1_comboBox.setCurrentText('') 
             if count == 0:
                 self.dockwidget.DRS_cut_no_tab1_comboBox.setCurrentText('') 
+    
     def dontdonothing(self):
             pass
         

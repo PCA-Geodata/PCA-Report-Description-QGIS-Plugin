@@ -232,8 +232,8 @@
      <widget class="QPlainTextEdit" name="DRS_tab1_result_plainTextEdit">
       <property name="font">
        <font>
-        <family>Arial</family>
-        <pointsize>9</pointsize>
+        <family>Calibri</family>
+        <pointsize>10</pointsize>
        </font>
       </property>
       <property name="frameShadow">
